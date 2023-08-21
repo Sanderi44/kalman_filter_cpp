@@ -10,7 +10,7 @@ public:
 	~KalmanFilter() = default;
     void Initialize(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
             Eigen::MatrixXd &G_in, Eigen::VectorXd u_in, Eigen::MatrixXd &Q_in);
-    void Predict();
+void Predict(const Eigen::VectorXd &x, const Eigen::MatrixXd &Q);
     void Update(const Eigen::VectorXd &z, const Eigen::MatrixXd &H_, const Eigen::MatrixXd &R_);
     void Control(Eigen::VectorXd &u_in);
 

@@ -27,12 +27,13 @@ void KalmanFilter::Initialize(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eige
     Q_ = Q_in;
 }
 
-void KalmanFilter::Predict()
+void KalmanFilter::Predict(const Eigen::VectorXd &x, const Eigen::MatrixXd &Q)
 {
     // cout << "Kalman Filter Predict" << endl;
-    x_ = F_ * x_ + G_ * u_;                            // State Prediction
+    x_ = F_ * x;                            // State Prediction
     Eigen::MatrixXd Ft = F_.transpose();     // transpose of State Transition Matrix
-    P_ = F_ * P_ * Ft + Q_;                  // Covariance Prediction
+    P_ = F_ * P_ * Ft + Q;                  // Covariance Prediction
+    std::cout << "Predicton Covariance: " << P_ << std::endl;
 }
 
 void KalmanFilter::Update(const Eigen::VectorXd &z, const Eigen::MatrixXd &H_, const Eigen::MatrixXd &R_)

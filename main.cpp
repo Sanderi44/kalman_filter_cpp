@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cstdlib>
+
 #include <cmath>
 #include <eigen3/Eigen/Dense>
 #include <vector>
@@ -11,6 +13,7 @@ using namespace std;
 namespace plt = matplotlibcpp;
 
 int main(int, char**){
+    srand(time(NULL)); // randomize seed
     std::cout << "Hello, from kalman_filter!\n";
     float steering_angle = 0.0;
     float dt = 0.1;
@@ -29,7 +32,7 @@ int main(int, char**){
     Eigen::MatrixXd P_in(4, 4);
     P_in << 1, 0, 0, 0,
             0, 1, 0, 0,
-            0, 0 ,1000, 0,
+            0, 0, 1000, 0,
             0, 0, 0, 1000;
     Eigen::MatrixXd F_in(4, 4);
     F_in << 1, 0, dt, 0,
@@ -49,6 +52,10 @@ int main(int, char**){
             0, 0.5 * dt * dt, 0, 0,
             0, 0, 0.5 * dt * dt, 0,
             0, 0, 0, 0.5 * dt * dt;
+    // Q_in << 1.0, 0, 0, 0,
+    //         0, 1.0, 0, 0,
+    //         0, 0, 100.0, 0,
+    //         0, 0, 0, 100.0;
 
     KalmanFilter kf(x_in, P_in, F_in, G_in, u_in, Q_in);
     Eigen::VectorXd acceleration_in(2);
@@ -77,6 +84,10 @@ int main(int, char**){
     // car.Accelerate(acceleration_in);
     // steering_angle = 0.2;
     std::vector<double> steering_angles;
+    Eigen::VectorXd measured_state(4);
+    float noise = 1.0;
+    float noise_x = -(noise / 2) + noise * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    float noise_y = -(noise / 2) + noise * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
     for (size_t i = 0; i < 100; i++)
     {
@@ -104,9 +115,20 @@ int main(int, char**){
         // Kalman Filter
         acceleration_in[0] = acc * cos(steering_angle);
         acceleration_in[1] = acc * sin(steering_angle);
-        kf.Control(acceleration_in);
-        kf.Predict();
+        // kf.Control(acceleration_in);
         kf_state = kf.State();
+
+
+        noise_x = -(noise / 2) + noise * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+        noise_y = -(noise / 2) + noise * static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+
+
+        measured_state << kf_state[0],
+                          kf_state[1],
+                          vel[0] + noise_x,
+                          vel[1] + noise_y;
+
+        kf.Predict(measured_state, Q_in);
         kf_x.push_back(kf_state[0]);
         kf_y.push_back(kf_state[1]);
         kf_vx.push_back(kf_state[2]);
